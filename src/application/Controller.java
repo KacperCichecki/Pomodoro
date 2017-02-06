@@ -86,10 +86,8 @@ public class Controller implements javafx.fxml.Initializable {
 				}
 			}
 		}
-
 		timer = new Timer();
 		timer.schedule(new Task(), 0, 1000);
-
 	}
 
 }

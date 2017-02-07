@@ -7,6 +7,8 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javafx.scene.media.AudioClip;
 
@@ -34,7 +36,7 @@ public class Controller implements javafx.fxml.Initializable {
 	private long givenTime;
 	private long elapsedTime;
 	static volatile boolean execute;
-	static Timer timer = null;
+	static ScheduledThreadPoolExecutor threadExecutor = null;
 
 	// define sound of siren
 	String sound = Controller.class.getResource("alarm.wav").toString();
@@ -56,6 +58,9 @@ public class Controller implements javafx.fxml.Initializable {
 		}
 
 		timeArea.setText("00:" + setArea.getText() + ":00");
+
+		double result = (double)58989893/60000000;
+		System.out.println(result);
 	}
 
 	public void startCounting(ActionEvent actionEvent) {
@@ -65,29 +70,35 @@ public class Controller implements javafx.fxml.Initializable {
 		execute = true;
 		System.out.println("startTime " + startTime);
 
-		class Task extends TimerTask {
+		class Task implements Runnable {
 
 			@Override
 			public void run() {
 				long currnetTime = System.nanoTime();
 				long remainingTime = startTime - currnetTime;
-				System.out.println("elapsedTime " + remainingTime);
+				System.out.println("remainingTime " + remainingTime/1000000000);
 
 				int minuts = Math.round((remainingTime/ 1000000000) / 60);
 				int sec = Math.round((remainingTime / 1000000000) % 60);
 				timeArea.setText(String.format("%0,2d : %0,2d", minuts, sec));
+
+				double elapsedPercent = (double)remainingTime/givenTime;
+				if(elapsedPercent>0){
+					progresBar.setProgress(elapsedPercent);
+				}
+
 				if (remainingTime < 1 && execute) {
 					long stopTime = System.nanoTime();
 					ALARM.play();
 					startButton.setDisable(false);
-					timer.cancel();
+					threadExecutor.shutdown();
 					System.out.println("stop time " + stopTime);
-					System.out.println("diffrence between start and stop time [0,1s] " + (startTime - stopTime)/100000000);
 				}
 			}
 		}
-		timer = new Timer();
-		timer.schedule(new Task(), 0, 1000);
+		threadExecutor = new ScheduledThreadPoolExecutor(1);
+		threadExecutor.scheduleWithFixedDelay(new Task(), 0, 1, TimeUnit.SECONDS);
+		threadExecutor.setRemoveOnCancelPolicy(true);
 	}
 
 }

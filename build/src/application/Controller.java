@@ -5,6 +5,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javafx.scene.media.AudioClip;
 
@@ -32,64 +36,69 @@ public class Controller implements javafx.fxml.Initializable {
 	private long givenTime;
 	private long elapsedTime;
 	static volatile boolean execute;
+	static ScheduledThreadPoolExecutor threadExecutor = null;
 
-	 String sound = Controller.class.getResource("alarm.wav").toString();
-	 private final AudioClip ALARM = new AudioClip(sound);
-
+	// define sound of siren
+	String sound = Controller.class.getResource("alarm.wav").toString();
+	private final AudioClip ALARM = new AudioClip(sound);
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		startButton.setDisable(true);
 	}
 
-	private long now(){
-		return System.currentTimeMillis();
-	}
-
 	public void setTime(ActionEvent actionEvent) {
 		startButton.setDisable(false);
 
 		try {
-			givenTime = 1000*60 * Long.valueOf(setArea.getText());
+			givenTime = (long)1000000000 * 60 * Long.valueOf(setArea.getText());
 		} catch (NumberFormatException e) {
 			System.out.println("illegal input");
 			givenTime = 0;
 		}
 
-		timeArea.setText("00:" + givenTime/60000 + ":00");
+		timeArea.setText("00:" + setArea.getText() + ":00");
+
+		double result = (double)58989893/60000000;
+		System.out.println(result);
 	}
 
 	public void startCounting(ActionEvent actionEvent) {
 
-		long startTime = now();
-		long setTime = startTime + givenTime;
+		startButton.setDisable(true);
+		long startTime = System.nanoTime() + givenTime;
+		execute = true;
+		System.out.println("startTime " + startTime);
 
-		Thread t1 = new Thread(() -> {
-			System.out.println("thread started");
-			execute = true;
+		class Task implements Runnable {
 
-			do{
-				try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+			@Override
+			public void run() {
+				long currnetTime = System.nanoTime();
+				long remainingTime = startTime - currnetTime;
+				System.out.println("remainingTime " + remainingTime/1000000000);
+
+				int minuts = Math.round((remainingTime/ 1000000000) / 60);
+				int sec = Math.round((remainingTime / 1000000000) % 60);
+				timeArea.setText(String.format("%0,2d : %0,2d", minuts, sec));
+
+				double elapsedPercent = (double)remainingTime/givenTime;
+				if(elapsedPercent>0){
+					progresBar.setProgress(elapsedPercent);
+				}
+
+				if (remainingTime < 1 && execute) {
+					long stopTime = System.nanoTime();
+					ALARM.play();
+					startButton.setDisable(false);
+					threadExecutor.shutdown();
+					System.out.println("stop time " + stopTime);
+				}
 			}
-				elapsedTime = (setTime - now())/1000;
-
-				long minutes = elapsedTime/60;
-				long seconds = elapsedTime%60;
-
-
-				timeArea.setText(String.format("00:%d:%d", minutes, seconds));
-			}while(elapsedTime > 0 && execute);
-
-			if(execute) ALARM.play();
-			startButton.setDisable(true);
-
-		});
-
-		t1.start();
-
+		}
+		threadExecutor = new ScheduledThreadPoolExecutor(1);
+		threadExecutor.scheduleWithFixedDelay(new Task(), 0, 1, TimeUnit.SECONDS);
+		threadExecutor.setRemoveOnCancelPolicy(true);
 	}
 
 }

@@ -30,14 +30,10 @@ public class Main extends Application {
 	}
 
 	public void stop(){
-		Controller.execute = false;
 		if (Controller.threadExecutor != null){
 			Controller.threadExecutor.shutdown();
 		}
 	}
-
-
-
 	public static void main(String[] args) {
 		launch(args);
 	}

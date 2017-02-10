@@ -125,6 +125,7 @@ public class Controller implements javafx.fxml.Initializable {
 					ALARM.play();
 					startButton.setDisable(false);
 					threadExecutor.shutdown();
+					startButton.setDisable(true);
 					System.out.println("stop time " + stopTime);
 				}
 			}
@@ -150,6 +151,7 @@ public class Controller implements javafx.fxml.Initializable {
 					ALARM.play();
 					startButton.setDisable(false);
 					threadExecutor.shutdown();
+					startButton.setDisable(true);
 					System.out.println("stop time " + stopTime);
 				}
 			}

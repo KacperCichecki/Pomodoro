@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 
 
@@ -17,15 +18,14 @@ public class Main extends Application {
 
 		} catch(Exception e) {
 			System.out.println("Problem with FXMLLoader: cant load parent");
-			//e.printStackTrace();
 		}
 
 		Scene scene = new Scene(root);
-			//scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setScene(scene);
 			primaryStage.sizeToScene();
 			primaryStage.setResizable(false);
 			primaryStage.setTitle("Pomadoro");
+			primaryStage.getIcons().add(new Image(getClass().getResource("pomodoro.png").toString()));
 			primaryStage.show();
 	}
 

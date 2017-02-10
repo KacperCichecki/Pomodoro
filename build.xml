@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-	<project name="PomadoroKacper" default="do-deploy" basedir="."  xmlns:fx="javafx:com.sun.javafx.tools.ant">
+	<project name="PomodoroKacper" default="do-deploy" basedir="."  xmlns:fx="javafx:com.sun.javafx.tools.ant">
 	<target name="init-fx-tasks">
 		<path id="fxant">
 			<filelist>
@@ -22,12 +22,12 @@
 	
 		<mkdir dir="project" />
 		<copy todir="project">
-			<fileset dir="E:\JavaProjectsEclipse\PomadoroKacper">
+			<fileset dir="E:\JavaProjectsEclipse\PomodoroKacper">
 				<include name="src/**" />
 			</fileset>
 		</copy>
 		<copy todir="project">
-			<fileset dir="E:\JavaProjectsEclipse\PomadoroKacper">
+			<fileset dir="E:\JavaProjectsEclipse\PomodoroKacper">
 				<include name="resources/**" />
 			</fileset>
 		</copy>
@@ -95,7 +95,7 @@
 	
 	
 		<fx:resources id="appRes">
-			<fx:fileset dir="dist" includes="PomadoroKacper.jar"/>
+			<fx:fileset dir="dist" includes="PomodoroKacper.jar"/>
 			<fx:fileset dir="dist" includes="libs/*"/>
 		</fx:resources>
 	
@@ -109,7 +109,7 @@
 	
 	
 	
-		<fx:jar destfile="dist/PomadoroKacper.jar">
+		<fx:jar destfile="dist/PomodoroKacper.jar">
 			<fx:application refid="fxApplication"/>
 			<fileset dir="build/classes">
 			</fileset>
@@ -118,7 +118,7 @@
 			<manifest>
 				<attribute name="Implementation-Vendor" value="Kacper Cichecki"/>
 				<attribute name="Implementation-Title" value="PomadoKacper"/>
-				<attribute name="Implementation-Version" value="1.0"/>
+				<attribute name="Implementation-Version" value="1.1"/>
 				<attribute name="PomadoroManifest" value="1"/>
 			</manifest>
 		</fx:jar>
@@ -132,11 +132,11 @@
 			includeDT="false"
 			offlineAllowed="true"
 			outdir="${basedir}/deploy"
-			outfile="PomadoroKacper" nativeBundles="exe"
+			outfile="PomodoroKacper" nativeBundles="exe"
 			updatemode="background" >
 	
 			<fx:platform basedir="${java.home}"/>
-			<fx:info title="PomadoroKacper" vendor="Kacper Cichecki"/>
+			<fx:info title="PomodoroKacper" vendor="Kacper Cichecki"/>
 	
 			<fx:application refId="fxApplication"/>
 			<fx:resources refid="appRes"/>

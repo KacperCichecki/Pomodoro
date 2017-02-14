@@ -7,12 +7,12 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="160.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.Controller">
+<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="160.0" prefWidth="220.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.Controller">
    <children>
-      <ProgressBar id="progresBar" fx:id="progresBar" prefWidth="200.0" progress="0.0" />
-      <TextArea id="timeArea" fx:id="timeArea" editable="false" prefHeight="100.0" prefWidth="199.0" text="00:00:00">
+      <ProgressBar id="progresBar" fx:id="progresBar" prefHeight="18.0" prefWidth="220.0" progress="0.0" />
+      <TextArea id="timeArea" fx:id="timeArea" editable="false" prefHeight="100.0" prefWidth="225.0" text="00 : 00 : 00">
          <font>
-            <Font size="36.0" />
+            <Font size="34.0" />
          </font>
       </TextArea>
       <HBox prefHeight="45.0" prefWidth="200.0">
@@ -25,12 +25,12 @@
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                </HBox.margin>
             </TextField>
-            <Button id="setButton" fx:id="setButton" mnemonicParsing="false" onAction="#setTime" text="set ">
+            <Button id="setButton" fx:id="setButton" defaultButton="true" mnemonicParsing="false" onAction="#setTime" prefHeight="25.0" prefWidth="60.0" text="set ">
                <HBox.margin>
                   <Insets bottom="5.0" right="5.0" top="5.0" />
                </HBox.margin>
             </Button>
-            <Button id="startButton" fx:id="startButton" mnemonicParsing="false" onAction="#startCounting" text="&gt;&gt;">
+            <Button id="startButton" fx:id="startButton" disable="true" mnemonicParsing="false" onAction="#startCounting" prefHeight="25.0" prefWidth="40.0" text="&gt;&gt;">
                <HBox.margin>
                   <Insets top="5.0" />
                </HBox.margin>

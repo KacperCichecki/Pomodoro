@@ -44,8 +44,6 @@ public class Controller implements javafx.fxml.Initializable {
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		dbConnetion = DBConnetion.getInstance();
-		currentLastId = dbConnetion.getLastId();
-		System.out.println("currentLastId when initialized: " + currentLastId);
 		state = StateOfTimer.PAUSED;
 	}
 
@@ -73,10 +71,12 @@ public class Controller implements javafx.fxml.Initializable {
 	}
 
 	public void startCounting(ActionEvent actionEvent) {
+
 		// when click PAUSE
 		if (state == StateOfTimer.STARTED_AND_RUNNING || state == StateOfTimer.STARTED) {
 			threadExecutor.shutdown();
-			dbConnetion.setStopTime(currentLastId + 1);
+			currentLastId = dbConnetion.getLastId();
+			dbConnetion.setPauseTime(currentLastId);
 			startOfWaiting = System.nanoTime();
 			startButton.setText(">>");
 			state = StateOfTimer.PAUSED;
@@ -85,7 +85,7 @@ public class Controller implements javafx.fxml.Initializable {
 		}
 		// when click START first time
 		else if (state == StateOfTimer.BEFORE_START) {
-
+			currentLastId = dbConnetion.getLastId();
 			dbConnetion.setStartTime(currentLastId + 1);
 			startTime = System.nanoTime() + givenTime;
 			startButton.setText("||");
@@ -98,7 +98,7 @@ public class Controller implements javafx.fxml.Initializable {
 		// when click START after PAUSE
 		else if (state == StateOfTimer.PAUSED) {
 			currentLastId = dbConnetion.getLastId();
-
+			dbConnetion.setStartAfterPauseTime(currentLastId);
 			timeOfWaiting = System.nanoTime() - startOfWaiting;
 			startTime += timeOfWaiting;
 			startButton.setText("||");
@@ -122,13 +122,14 @@ public class Controller implements javafx.fxml.Initializable {
 
 			// when click START
 			if (state == StateOfTimer.STARTED_AND_RUNNING) {
-				//System.out.println("run when click START " + state);
+				// System.out.println("run when click START " + state);
 				long currnetTime = System.nanoTime();
 				long remainingTime = startTime - currnetTime;
-				//System.out.println("remainingTime " + remainingTime / 1000000000);
-				long seconds = (TimeUnit.NANOSECONDS.toSeconds(remainingTime))%60;
-				long minutes = (TimeUnit.NANOSECONDS.toMinutes(remainingTime))%60;
-				long hours = (TimeUnit.NANOSECONDS.toHours(remainingTime))%60;
+				// System.out.println("remainingTime " + remainingTime /
+				// 1000000000);
+				long seconds = (TimeUnit.NANOSECONDS.toSeconds(remainingTime)) % 60;
+				long minutes = (TimeUnit.NANOSECONDS.toMinutes(remainingTime)) % 60;
+				long hours = (TimeUnit.NANOSECONDS.toHours(remainingTime)) % 60;
 
 				timeArea.setText(String.format("%0,2d : %0,2d : %0,2d", hours, minutes, seconds));
 
@@ -140,23 +141,27 @@ public class Controller implements javafx.fxml.Initializable {
 				if (remainingTime < 1) {
 					long stopTime = System.nanoTime();
 					ALARM.play();
-					startButton.setDisable(false);
 					threadExecutor.shutdown();
 					startButton.setDisable(true);
 					System.out.println("stop time " + stopTime);
+					currentLastId = dbConnetion.getLastId();
+					dbConnetion.setPauseTime(currentLastId);
+					state = StateOfTimer.PAUSED;
 				}
 			}
 
 			// when click START after PAUSE
 			if (state == StateOfTimer.STARTED) {
-				//System.out.println("run when click START after PAUSE " + state);
+				// System.out.println("run when click START after PAUSE " +
+				// state);
 				long currnetTime = System.nanoTime();
 				long remainingTime = startTime - currnetTime;
-				//System.out.println("remainingTime " + remainingTime / 1000000000);
+				// System.out.println("remainingTime " + remainingTime /
+				// 1000000000);
 
-				long seconds = (TimeUnit.NANOSECONDS.toSeconds(remainingTime))%60;
-				long minutes = (TimeUnit.NANOSECONDS.toMinutes(remainingTime))%60;
-				long hours = (TimeUnit.NANOSECONDS.toHours(remainingTime))%60;
+				long seconds = (TimeUnit.NANOSECONDS.toSeconds(remainingTime)) % 60;
+				long minutes = (TimeUnit.NANOSECONDS.toMinutes(remainingTime)) % 60;
+				long hours = (TimeUnit.NANOSECONDS.toHours(remainingTime)) % 60;
 
 				timeArea.setText(String.format("%0,2d : %0,2d : %0,2d", hours, minutes, seconds));
 
@@ -168,10 +173,12 @@ public class Controller implements javafx.fxml.Initializable {
 				if (remainingTime < 1) {
 					long stopTime = System.nanoTime();
 					ALARM.play();
-					startButton.setDisable(false);
 					threadExecutor.shutdown();
 					startButton.setDisable(true);
 					System.out.println("stop time " + stopTime);
+					currentLastId = dbConnetion.getLastId();
+					dbConnetion.setPauseTime(currentLastId);
+					state = StateOfTimer.PAUSED;
 				}
 			}
 		}

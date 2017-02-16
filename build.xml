@@ -19,6 +19,11 @@
 	
 		<mkdir dir="externalLibs" />
 	
+		<copy todir="externalLibs">
+			<fileset dir="E:\JavaProjectsEclipse\PomodoroKacper\lib">
+				<filename name="mysql-connector-java-5.1.40-bin.jar"/>
+			</fileset>
+		</copy>
 	
 		<mkdir dir="project" />
 		<copy todir="project">
@@ -43,6 +48,7 @@
 		<!-- Copy project-libs references -->
 		<copy todir="build/libs">
 			<fileset dir="externalLibs">
+				<include name="mysql-connector-java-5.1.40-bin.jar"/>
 			</fileset>
 		</copy>
 	
@@ -118,7 +124,7 @@
 			<manifest>
 				<attribute name="Implementation-Vendor" value="Kacper Cichecki"/>
 				<attribute name="Implementation-Title" value="PomadoKacper"/>
-				<attribute name="Implementation-Version" value="1.1"/>
+				<attribute name="Implementation-Version" value="1.0"/>
 				<attribute name="PomadoroManifest" value="1"/>
 			</manifest>
 		</fx:jar>

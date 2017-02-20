@@ -86,7 +86,7 @@ public class Controller implements javafx.fxml.Initializable {
 		// when click START first time
 		else if (state == StateOfTimer.BEFORE_START) {
 			currentLastId = dbConnetion.getLastId();
-			dbConnetion.setStartTime(currentLastId + 1);
+			dbConnetion.insertStartActivity(currentLastId + 1, "study");
 			startTime = System.nanoTime() + givenTime;
 			startButton.setText("||");
 			System.out.println("startTime " + startTime);

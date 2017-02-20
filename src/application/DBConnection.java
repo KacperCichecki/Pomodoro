@@ -13,7 +13,7 @@ import java.sql.Types;
 
 class DBConnetion {
 
-	//data required for database connection
+	// data required for database connection
 	String url = "jdbc:mysql://localhost:3306/demo";
 	String user = "root";
 	String password = "cichacz1";
@@ -34,12 +34,12 @@ class DBConnetion {
 		}
 	}
 
-	//Singleton pattern of database connection
-	public static DBConnetion getInstance(){
+	// Singleton pattern of database connection
+	public static DBConnetion getInstance() {
 		return dbConnection;
 	}
 
-	//get id of last event from data base
+	// get id of last event from data base
 	public int getLastId() {
 		int result = 0;
 		ResultSet myRs = null;
@@ -66,28 +66,16 @@ class DBConnetion {
 		return result;
 	}
 
-	//close connection to database
-	public void closeConnection() {
-		if (myCon != null) {
-			try {
-				myCon.close();
-				System.out.println("closed connection");
-			} catch (SQLException e) {
-				System.out.println("can't close connection");
-				e.printStackTrace();
-			}
-		}
-	}
-
-	//add start time when first time clicked start
-	public void setStartTime(int id) {
-		String sql = "insert into demo.pomodoro (id, start, activity) " + "values (" + id + ", NOW(), 'study')";
+	// insert start time of given activity
+	public void insertStartActivity(int id, String acivity) {
+		String sql = "insert into demo.pomodoro (id, start, activity) " +
+	"values (" + id + ", NOW(), '" + acivity + "')";
 		try {
 			myStmt = myCon.createStatement();
 			myStmt.executeUpdate(sql);
-			System.out.println("start time updated, id: " + id);
+			System.out.println(acivity + " time updated, id: " + id);
 		} catch (SQLException e) {
-			System.out.println("fail to insert start time");
+			System.out.println("fail to insert start time of" + acivity);
 			e.printStackTrace();
 		} finally {
 			try {
@@ -98,7 +86,7 @@ class DBConnetion {
 		}
 	}
 
-	//set stop time of study, duration of study and insert start time of relax
+	// set stop time of study, duration of study and insert start time of relax
 	public void setPauseTime(int id) {
 		String sql = "UPDATE pomodoro SET stop= NOW() WHERE `id`=" + id;
 		try {
@@ -106,7 +94,7 @@ class DBConnetion {
 			myStmt.executeUpdate(sql);
 			System.out.println("stop time study updated, id: " + id);
 			this.setDuration(id);
-			this.insertStartRelax(id + 1);
+			this.insertStartActivity(id + 1, "relax");
 		} catch (SQLException e) {
 			System.out.println("fail to stop study time update");
 			e.printStackTrace();
@@ -119,15 +107,18 @@ class DBConnetion {
 		}
 	}
 
-	//insert start time of relax
-	private void insertStartRelax(int id) {
-		String sql = "insert into demo.pomodoro (id, start, activity) " + "values (" + id + ", NOW(), 'relax')";
+	// set stop time and duration of relax and insert start time of study
+	public void setStartAfterPauseTime(int id) {
+
+		String sql = "UPDATE demo.pomodoro SET stop=NOW(), activity='relax' WHERE `id`=" + id;
 		try {
 			myStmt = myCon.createStatement();
 			myStmt.executeUpdate(sql);
-			System.out.println("start of relax inserted, id: " + id);
+			System.out.println("stop time relax updated, id: " + id);
+			this.setDuration(id);
+			this.insertStartActivity(id + 1, "study");
 		} catch (SQLException e) {
-			System.out.println("fail to start of relax insert");
+			System.out.println("fail to stop relax time update, id: " + id);
 			e.printStackTrace();
 		} finally {
 			try {
@@ -138,11 +129,32 @@ class DBConnetion {
 		}
 	}
 
-	//insert duration of activity
+	// set stop time and duration when program is closing
+	public void registerTimeOfClosing() {
+		int currentId = getLastId();
+		String sql = "UPDATE pomodoro SET stop= NOW() WHERE `id`=" + currentId;
+		try {
+			myStmt = myCon.createStatement();
+			myStmt.executeUpdate(sql);
+			System.out.println("stop time of last activity updated, id: " + currentId);
+			this.setDuration(currentId);
+		} catch (SQLException e) {
+			System.out.println("fail to stop last activity update");
+			e.printStackTrace();
+		} finally {
+			try {
+				myStmt.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	// insert duration of activity
 	private void setDuration(int id) {
 		Timestamp start = null;
 		Timestamp stop = null;
-		//get form db start and stop of activity
+		// get form db start and stop of activity
 		try {
 			myStmt = myCon.createStatement();
 			ResultSet myRs = myStmt.executeQuery("select * from demo.pomodoro where id=" + id);
@@ -162,17 +174,17 @@ class DBConnetion {
 			}
 		}
 
-		//calculate duration of activity and insert that time to db
-		//very inefficient way to do this. Improve when know how to do this in mySql automatically
+		// calculate duration of activity and insert that time to db
+		// very inefficient way to do this. Improve when know how to do this in
+		// mySql automatically
 		long diffrence = stop.getTime() - start.getTime();
 		System.out.println("diffrence: " + diffrence);
 		int seconds = (int) diffrence / 1000;
 		int sec = seconds % 60;
 		int minutes = (seconds / 60) % 60;
 		int hours = (seconds / 3600);
-		String sql = "UPDATE pomodoro SET duration = '" +
-					String.format("%0,2d:%0,2d:%0,2d", hours, minutes, sec)
-					+ "' WHERE `id`=" + id;
+		String sql = "UPDATE pomodoro SET duration = '" + String.format("%0,2d:%0,2d:%0,2d", hours, minutes, sec)
+				+ "' WHERE `id`=" + id;
 		try {
 			myStmt = myCon.createStatement();
 			myStmt.executeUpdate(sql);
@@ -189,68 +201,16 @@ class DBConnetion {
 		}
 	}
 
-	//set stop time and duration of relax and insert start time of study
-	public void setStartAfterPauseTime(int id) {
-
-		String sql = "UPDATE demo.pomodoro SET stop=NOW(), activity='relax' WHERE `id`=" + id;
-		try {
-			myStmt = myCon.createStatement();
-			myStmt.executeUpdate(sql);
-			System.out.println("stop time relax updated, id: " + id);
-			this.setDuration(id);
-			this.insertStartStudy(id + 1);
-		} catch (SQLException e) {
-			System.out.println("fail to stop relax time update, id: " + id);
-			e.printStackTrace();
-		} finally {
+	// close connection to database
+	public void closeConnection() {
+		if (myCon != null) {
 			try {
-				myStmt.close();
+				myCon.close();
+				System.out.println("closed connection");
 			} catch (SQLException e) {
+				System.out.println("can't close connection");
 				e.printStackTrace();
 			}
 		}
-	}
-
-	//insert time of study
-	private void insertStartStudy(int id) {
-		String sql = "insert into demo.pomodoro (id, start, activity) " + "values (" + id + ", NOW(), 'study')";
-		try {
-			myStmt = myCon.createStatement();
-			myStmt.executeUpdate(sql);
-			System.out.println("start of study inserted, id: " + id);
-		} catch (SQLException e) {
-			System.out.println("fail to start of study insert, id: " + id);
-			e.printStackTrace();
-		} finally {
-			try {
-				myStmt.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	public void registerTimeOfClosing() {
-
-		int currentId = getLastId();
-
-		String sql = "UPDATE pomodoro SET stop= NOW() WHERE `id`=" + currentId;
-		try {
-			myStmt = myCon.createStatement();
-			myStmt.executeUpdate(sql);
-			System.out.println("stop time of last activity updated, id: " + currentId);
-			this.setDuration(currentId);
-		} catch (SQLException e) {
-			System.out.println("fail to stop last activity update");
-			e.printStackTrace();
-		} finally {
-			try {
-				myStmt.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-
-
 	}
 }

@@ -28,12 +28,12 @@
 		<mkdir dir="project" />
 		<copy todir="project">
 			<fileset dir="E:\JavaProjectsEclipse\PomodoroKacper">
-				<include name="src/**" />
+				<include name="resources/**" />
 			</fileset>
 		</copy>
 		<copy todir="project">
 			<fileset dir="E:\JavaProjectsEclipse\PomodoroKacper">
-				<include name="resources/**" />
+				<include name="src/**" />
 			</fileset>
 		</copy>
 	

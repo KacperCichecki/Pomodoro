@@ -21,8 +21,11 @@ class DBConnetion {
 	Connection myCon = null;
 	Statement myStmt = null;
 
+	int durationActivity = 0;
+
 	private static DBConnetion dbConnection = new DBConnetion();
 
+	// private constructor
 	private DBConnetion() {
 		try {
 			myCon = DriverManager.getConnection(url, user, password);
@@ -68,8 +71,8 @@ class DBConnetion {
 
 	// insert start time of given activity
 	public void insertStartActivity(int id, String acivity) {
-		String sql = "insert into demo.pomodoro (id, start, activity) " +
-	"values (" + id + ", NOW(), '" + acivity + "')";
+		String sql = "insert into demo.pomodoro (id, start, activity) " + "values (" + id + ", NOW(), '" + acivity
+				+ "')";
 		try {
 			myStmt = myCon.createStatement();
 			myStmt.executeUpdate(sql);
@@ -86,13 +89,16 @@ class DBConnetion {
 		}
 	}
 
+	// when click PAUSE
 	// set stop time of study, duration of study and insert start time of relax
 	public void setPauseTime(int id) {
-		String sql = "UPDATE pomodoro SET stop= NOW() WHERE `id`=" + id;
+
+		String sql = "UPDATE demo.pomodoro SET stop= NOW() WHERE `id`=" + id;
 		try {
 			myStmt = myCon.createStatement();
 			myStmt.executeUpdate(sql);
 			System.out.println("stop time study updated, id: " + id);
+
 			this.setDuration(id);
 			this.insertStartActivity(id + 1, "relax");
 		} catch (SQLException e) {
@@ -107,6 +113,7 @@ class DBConnetion {
 		}
 	}
 
+	// when click START after PAUSE
 	// set stop time and duration of relax and insert start time of study
 	public void setStartAfterPauseTime(int id) {
 
@@ -115,8 +122,15 @@ class DBConnetion {
 			myStmt = myCon.createStatement();
 			myStmt.executeUpdate(sql);
 			System.out.println("stop time relax updated, id: " + id);
-			this.setDuration(id);
-			this.insertStartActivity(id + 1, "study");
+			durationActivity = giveDurationOfActivity(id);
+			if (durationActivity > Controller.timeOfPauseWithoutRegistration) {
+				this.setDuration(id);
+				this.insertStartActivity(id + 1, "study");
+			}else{
+				this.removeRow(id);
+				System.out.println("row removed, time of relax: " + durationActivity);
+			}
+
 		} catch (SQLException e) {
 			System.out.println("fail to stop relax time update, id: " + id);
 			e.printStackTrace();
@@ -129,7 +143,27 @@ class DBConnetion {
 		}
 	}
 
-	// set stop time and duration when program is closing
+	private void removeRow(int id) {
+
+		String sql = "DELETE FROM demo.pomodoro WHERE id=" + id;
+		try {
+			myStmt = myCon.createStatement();
+			myStmt.executeUpdate(sql);
+			System.out.println("removed row, id: " + id);
+		} catch (SQLException e) {
+			System.out.println("fail to remove row, id: " + id);
+			e.printStackTrace();
+		} finally {
+			try {
+				myStmt.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	// set stop time and duration of activity when program is closing
 	public void registerTimeOfClosing() {
 		int currentId = getLastId();
 		String sql = "UPDATE pomodoro SET stop= NOW() WHERE `id`=" + currentId;
@@ -150,36 +184,13 @@ class DBConnetion {
 		}
 	}
 
-	// insert duration of activity
+	// insert duration of activity to db
+	// very inefficient way to do this. Improve when know how to do this in
+	// mySql automatically
 	private void setDuration(int id) {
-		Timestamp start = null;
-		Timestamp stop = null;
-		// get form db start and stop of activity
-		try {
-			myStmt = myCon.createStatement();
-			ResultSet myRs = myStmt.executeQuery("select * from demo.pomodoro where id=" + id);
-			while (myRs.next()) {
-				start = myRs.getTimestamp("start");
-				stop = myRs.getTimestamp("stop");
-			}
-			System.out.println("start time read: " + start.getTime() + " start time read: " + stop.getTime());
-		} catch (SQLException e) {
-			System.out.println("setDuration fail");
-			e.printStackTrace();
-		} finally {
-			try {
-				myStmt.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
 
-		// calculate duration of activity and insert that time to db
-		// very inefficient way to do this. Improve when know how to do this in
-		// mySql automatically
-		long diffrence = stop.getTime() - start.getTime();
-		System.out.println("diffrence: " + diffrence);
-		int seconds = (int) diffrence / 1000;
+		int seconds = giveDurationOfActivity(id);
+		System.out.println("diffrence: " + seconds);
 		int sec = seconds % 60;
 		int minutes = (seconds / 60) % 60;
 		int hours = (seconds / 3600);
@@ -199,6 +210,34 @@ class DBConnetion {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	// calculate and return duration in seconds of activity with given id
+	public int giveDurationOfActivity(int id) {
+
+		Timestamp start = null;
+		Timestamp stop = null;
+		int diffrence = 0;
+		// get form db start and stop of activity
+		try {
+			myStmt = myCon.createStatement();
+			ResultSet myRs = myStmt.executeQuery("select * from demo.pomodoro where id=" + id);
+			while (myRs.next()) {
+				start = myRs.getTimestamp("start");
+				stop = myRs.getTimestamp("stop");
+			}
+			System.out.println("start time read: " + start.getTime() + " start time read: " + stop.getTime());
+		} catch (SQLException e) {
+			System.out.println("get form db start and stop failed");
+			e.printStackTrace();
+		} finally {
+			try {
+				myStmt.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return diffrence = (int) ((stop.getTime() - start.getTime()) / 1000);
 	}
 
 	// close connection to database

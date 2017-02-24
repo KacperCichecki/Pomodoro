@@ -31,6 +31,8 @@ public class Controller implements javafx.fxml.Initializable {
 	private long startOfWaiting = 0;
 	private long timeOfWaiting = 0;
 	private long startTime = 0;
+	//use it variable to decide whether this activity should be added to db
+	static int timeOfPauseWithoutRegistration = 15;
 	static ScheduledThreadPoolExecutor threadExecutor = null;
 	static StateOfTimer state;
 	static DBConnetion dbConnetion = null;
@@ -86,7 +88,7 @@ public class Controller implements javafx.fxml.Initializable {
 		// when click START first time
 		else if (state == StateOfTimer.BEFORE_START) {
 			currentLastId = dbConnetion.getLastId();
-			dbConnetion.setStartTime(currentLastId + 1);
+			dbConnetion.insertStartActivity(currentLastId + 1, "study");
 			startTime = System.nanoTime() + givenTime;
 			startButton.setText("||");
 			System.out.println("startTime " + startTime);

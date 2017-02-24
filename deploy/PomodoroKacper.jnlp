@@ -8,7 +8,7 @@
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="PomodoroKacper.jar" size="1373710" download="eager" />
+    <jar href="PomodoroKacper.jar" size="1374013" download="eager" />
     <jar href="libs\mysql-connector-java-5.1.40-bin.jar" size="990927" download="eager" />
   </resources>
   <jfx:javafx-desc  width="0" height="0" main-class="application.Main"  name="PomadoKacper" />

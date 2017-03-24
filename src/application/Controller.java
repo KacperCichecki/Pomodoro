@@ -8,11 +8,19 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import javafx.scene.media.AudioClip;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.stage.Popup;
+import javafx.stage.Stage;
 
 public class Controller implements javafx.fxml.Initializable {
 
@@ -27,12 +35,19 @@ public class Controller implements javafx.fxml.Initializable {
 	@FXML
 	private ProgressBar progresBar;
 
+	// main stage of the program
+	private Stage stage = null;
+
+	// popUp to collect info about activity
+	MyPopUp popUp = null;
+
 	private long givenTime = 0;
 	private long startOfWaiting = 0;
 	private long timeOfWaiting = 0;
 	private long startTime = 0;
-	//use it variable to decide whether this activity should be added to db
+	// use it variable to decide whether this activity should be added to db
 	static int timeOfPauseWithoutRegistration = 15;
+
 	static ScheduledThreadPoolExecutor threadExecutor = null;
 	static StateOfTimer state;
 	static DBConnetion dbConnetion = null;
@@ -47,12 +62,23 @@ public class Controller implements javafx.fxml.Initializable {
 	public void initialize(URL location, ResourceBundle resources) {
 		dbConnetion = DBConnetion.getInstance();
 		state = StateOfTimer.PAUSED;
+
 	}
 
 	public void setTime(ActionEvent actionEvent) {
 		if (threadExecutor != null) {
 			threadExecutor.shutdown();
 		}
+
+		if (stage == null) {
+			stage = (Stage) progresBar.getScene().getWindow();
+		}
+
+		if (popUp == null) {
+			popUp = new MyPopUp(stage);
+
+		}
+
 		startButton.setText(">>");
 		setButton.setText("reset");
 		startButton.setDisable(false);
@@ -85,6 +111,7 @@ public class Controller implements javafx.fxml.Initializable {
 			System.out.println("when click PAUSE");
 			System.out.println("startCounting: " + state);
 		}
+
 		// when click START first time
 		else if (state == StateOfTimer.BEFORE_START) {
 			currentLastId = dbConnetion.getLastId();
@@ -109,6 +136,7 @@ public class Controller implements javafx.fxml.Initializable {
 			System.out.println("startCounting: " + state);
 		}
 
+		// this code runs every time
 		if (state == StateOfTimer.STARTED_AND_RUNNING || state == StateOfTimer.PAUSED) {
 			System.out.println("create new ScheduledThreadPoolExecutor");
 			System.out.println("startCounting: " + state);
@@ -116,14 +144,22 @@ public class Controller implements javafx.fxml.Initializable {
 			threadExecutor.scheduleAtFixedRate(new Task(), 0, 500, TimeUnit.MILLISECONDS);
 			threadExecutor.setRemoveOnCancelPolicy(true);
 		}
+
+		// show popup to save infor about study when click start of study
+		if (state == StateOfTimer.STARTED || state == StateOfTimer.STARTED_AND_RUNNING) {
+			popUp.show();
+		}
+
 	}
 
 	class Task implements Runnable {
+
 		@Override
 		public void run() {
 
 			// when click START
 			if (state == StateOfTimer.STARTED_AND_RUNNING) {
+
 				// System.out.println("run when click START " + state);
 				long currnetTime = System.nanoTime();
 				long remainingTime = startTime - currnetTime;

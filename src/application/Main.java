@@ -2,11 +2,14 @@ package application;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 
 public class Main extends Application {
 	Parent root;
@@ -27,6 +30,7 @@ public class Main extends Application {
 		primaryStage.setTitle("Pomadoro");
 		primaryStage.getIcons().add(new Image(getClass().getResource("pomodoro.png").toString()));
 		primaryStage.show();
+		
 	}
 
 	public void stop() {

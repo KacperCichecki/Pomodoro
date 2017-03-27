@@ -24,5 +24,5 @@ Przed rozpoczęciem pracy należy skonfigurować połączenie z bazą danych.
 W tym momencie możliwe jest jedynie współpraca z bazą danych mysql.
 
 
-source code: https://github.com/KacperCichecki/Pomodoro/tree/master/bin/application
+source code: https://github.com/KacperCichecki/Pomodoro/blob/master/build/src/application
 dowload: https://github.com/KacperCichecki/Pomodoro/blob/master/deploy/PomodoroKacper.jar

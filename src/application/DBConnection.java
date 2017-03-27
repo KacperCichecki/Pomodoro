@@ -162,8 +162,8 @@ class DBConnetion {
 
 	}
 
-	// set stop time and duration of activity when program is closing
-	public void registerTimeOfClosing() {
+	// set stop time and duration of activity that has the biggest id
+	public void registerStopDurationLastActivity() {
 		int currentId = getLastId();
 		String sql = "UPDATE pomodoro SET stop= NOW() WHERE `id`=" + currentId;
 		try {

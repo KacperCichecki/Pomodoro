@@ -53,6 +53,8 @@ public class Controller implements javafx.fxml.Initializable {
 	static DBConnetion dbConnetion = null;
 	// id of last record in my pomodoro table in db
 	int currentLastId = 0;
+	//flag to show whether time was already set
+	private boolean justStarted = true;
 
 	// define sound of siren
 	String sound = Controller.class.getResource("alarm.wav").toString();
@@ -62,12 +64,13 @@ public class Controller implements javafx.fxml.Initializable {
 	public void initialize(URL location, ResourceBundle resources) {
 		dbConnetion = DBConnetion.getInstance();
 		state = StateOfTimer.PAUSED;
-
 	}
 
+	//method to set and reset time
 	public void setTime(ActionEvent actionEvent) {
 		if (threadExecutor != null) {
 			threadExecutor.shutdown();
+			System.out.println("threadExecutor shutdown");
 		}
 
 		if (stage == null) {
@@ -76,13 +79,18 @@ public class Controller implements javafx.fxml.Initializable {
 
 		if (popUp == null) {
 			popUp = new MyPopUp(stage);
-
 		}
+
+		if(!justStarted){
+			dbConnetion.registerStopDurationLastActivity();
+		}
+		justStarted = false;
 
 		startButton.setText(">>");
 		setButton.setText("reset");
 		startButton.setDisable(false);
 		state = StateOfTimer.BEFORE_START;
+
 		try {
 			givenTime = (long) 1000000000 * 60 * Long.valueOf(setArea.getText());
 		} catch (NumberFormatException e) {
@@ -98,8 +106,8 @@ public class Controller implements javafx.fxml.Initializable {
 		System.out.println("when click setTime: " + state);
 	}
 
+	//method to start counting set time
 	public void startCounting(ActionEvent actionEvent) {
-
 		// when click PAUSE
 		if (state == StateOfTimer.STARTED_AND_RUNNING || state == StateOfTimer.STARTED) {
 			threadExecutor.shutdown();
@@ -108,11 +116,11 @@ public class Controller implements javafx.fxml.Initializable {
 			startOfWaiting = System.nanoTime();
 			startButton.setText(">>");
 			state = StateOfTimer.PAUSED;
-			System.out.println("when click PAUSE");
-			System.out.println("startCounting: " + state);
+			System.out.println("when click PAUSE; startCounting:  " + state);
+			setButton.setDisable(false);
 		}
 
-		// when click START first time
+		// when click START after setting time
 		else if (state == StateOfTimer.BEFORE_START) {
 			currentLastId = dbConnetion.getLastId();
 			dbConnetion.insertStartActivity(currentLastId + 1, "study");
@@ -120,8 +128,8 @@ public class Controller implements javafx.fxml.Initializable {
 			startButton.setText("||");
 			System.out.println("startTime " + startTime);
 			state = StateOfTimer.STARTED_AND_RUNNING;
-			System.out.println("when click START");
-			System.out.println("startCounting: " + state);
+			System.out.println("when click START first time; startCounting: " + state);
+			setButton.setDisable(true);
 		}
 
 		// when click START after PAUSE
@@ -132,11 +140,11 @@ public class Controller implements javafx.fxml.Initializable {
 			startTime += timeOfWaiting;
 			startButton.setText("||");
 			state = StateOfTimer.STARTED;
-			System.out.println("when click START after PAUSE");
-			System.out.println("startCounting: " + state);
+			System.out.println("when click START after PAUSE; startCounting: " + state);
+			setButton.setDisable(true);
 		}
 
-		// this code runs every time
+		// this code runs every time apart from starting first time
 		if (state == StateOfTimer.STARTED_AND_RUNNING || state == StateOfTimer.PAUSED) {
 			System.out.println("create new ScheduledThreadPoolExecutor");
 			System.out.println("startCounting: " + state);
@@ -145,11 +153,10 @@ public class Controller implements javafx.fxml.Initializable {
 			threadExecutor.setRemoveOnCancelPolicy(true);
 		}
 
-		// show popup to save infor about study when click start of study
+		// show popup to save info about study when click start of study
 		if (state == StateOfTimer.STARTED || state == StateOfTimer.STARTED_AND_RUNNING) {
 			popUp.show();
 		}
-
 	}
 
 	class Task implements Runnable {
@@ -163,8 +170,7 @@ public class Controller implements javafx.fxml.Initializable {
 				// System.out.println("run when click START " + state);
 				long currnetTime = System.nanoTime();
 				long remainingTime = startTime - currnetTime;
-				// System.out.println("remainingTime " + remainingTime /
-				// 1000000000);
+				// System.out.println("remainingTime " + remainingTime /1000000000);
 				long seconds = (TimeUnit.NANOSECONDS.toSeconds(remainingTime)) % 60;
 				long minutes = (TimeUnit.NANOSECONDS.toMinutes(remainingTime)) % 60;
 				long hours = (TimeUnit.NANOSECONDS.toHours(remainingTime)) % 60;
@@ -190,12 +196,10 @@ public class Controller implements javafx.fxml.Initializable {
 
 			// when click START after PAUSE
 			if (state == StateOfTimer.STARTED) {
-				// System.out.println("run when click START after PAUSE " +
-				// state);
+				// System.out.println("run when click START after PAUSE " + state);
 				long currnetTime = System.nanoTime();
 				long remainingTime = startTime - currnetTime;
-				// System.out.println("remainingTime " + remainingTime /
-				// 1000000000);
+				// System.out.println("remainingTime " + remainingTime / 1000000000);
 
 				long seconds = (TimeUnit.NANOSECONDS.toSeconds(remainingTime)) % 60;
 				long minutes = (TimeUnit.NANOSECONDS.toMinutes(remainingTime)) % 60;

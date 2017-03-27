@@ -124,7 +124,7 @@
 			<manifest>
 				<attribute name="Implementation-Vendor" value="Kacper Cichecki"/>
 				<attribute name="Implementation-Title" value="PomadoKacper"/>
-				<attribute name="Implementation-Version" value="1.0"/>
+				<attribute name="Implementation-Version" value="1.1"/>
 				<attribute name="PomadoroManifest" value="1"/>
 			</manifest>
 		</fx:jar>

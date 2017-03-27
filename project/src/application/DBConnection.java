@@ -76,7 +76,7 @@ class DBConnetion {
 		try {
 			myStmt = myCon.createStatement();
 			myStmt.executeUpdate(sql);
-			System.out.println(acivity + " time updated, id: " + id);
+			System.out.println(acivity + " time inserted, id: " + id);
 		} catch (SQLException e) {
 			System.out.println("fail to insert start time of" + acivity);
 			e.printStackTrace();
@@ -144,7 +144,6 @@ class DBConnetion {
 	}
 
 	private void removeRow(int id) {
-
 		String sql = "DELETE FROM demo.pomodoro WHERE id=" + id;
 		try {
 			myStmt = myCon.createStatement();
@@ -163,8 +162,8 @@ class DBConnetion {
 
 	}
 
-	// set stop time and duration of activity when program is closing
-	public void registerTimeOfClosing() {
+	// set stop time and duration of activity that has the biggest id
+	public void registerStopDurationLastActivity() {
 		int currentId = getLastId();
 		String sql = "UPDATE pomodoro SET stop= NOW() WHERE `id`=" + currentId;
 		try {
@@ -185,17 +184,9 @@ class DBConnetion {
 	}
 
 	// insert duration of activity to db
-	// very inefficient way to do this. Improve when know how to do this in
-	// mySql automatically
 	private void setDuration(int id) {
 
-		int seconds = giveDurationOfActivity(id);
-		System.out.println("diffrence: " + seconds);
-		int sec = seconds % 60;
-		int minutes = (seconds / 60) % 60;
-		int hours = (seconds / 3600);
-		String sql = "UPDATE pomodoro SET duration = '" + String.format("%0,2d:%0,2d:%0,2d", hours, minutes, sec)
-				+ "' WHERE `id`=" + id;
+		String sql = "UPDATE pomodoro SET duration = SEC_TO_TIME(TIMESTAMPDIFF(second, start, stop)) WHERE id=" + id;
 		try {
 			myStmt = myCon.createStatement();
 			myStmt.executeUpdate(sql);
@@ -251,5 +242,25 @@ class DBConnetion {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	//insert to database description of activity
+	public void saveDescription(String activity) {
+		String sql = "UPDATE pomodoro SET description = '" + activity +"' ORDER BY id DESC LIMIT 1";
+		try {
+			myStmt = myCon.createStatement();
+			myStmt.executeUpdate(sql);
+			System.out.println("description updated");
+		} catch (SQLException e) {
+			System.out.println("fail to description update");
+			e.printStackTrace();
+		} finally {
+			try {
+				myStmt.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+
 	}
 }

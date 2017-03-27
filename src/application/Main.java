@@ -38,7 +38,7 @@ public class Main extends Application {
 			Controller.threadExecutor.shutdown();
 		}
 		if (Controller.dbConnetion != null) {
-			Controller.dbConnetion.registerTimeOfClosing();
+			Controller.dbConnetion.registerStopDurationLastActivity();
 			Controller.dbConnetion.closeConnection();
 		}
 	}
